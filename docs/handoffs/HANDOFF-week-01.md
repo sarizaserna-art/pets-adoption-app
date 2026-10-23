@@ -99,11 +99,14 @@ git switch -c week-01
 cd ..
 pnpm create expo-app@latest pets-scaffold --template blank-typescript@sdk-57 --no-install
 rm -rf pets-scaffold/.git
-rsync -a --exclude .gitignore pets-scaffold/ pets-adoption-app/
+rm -f pets-scaffold/.gitignore
+cp -a pets-scaffold/. pets-adoption-app/   # (rsync no siempre está instalado)
 rm -rf pets-scaffold
 cd pets-adoption-app
 ```
 **Verificar** en `package.json` que `expo` empieza por `57.`. Si no, DETENERSE y reportar al usuario.
+
+> El template trae además `AGENTS.md` y `LICENSE` (Expo, MIT). Se conservan.
 
 ### [ ] Paso 4 — Fijar versiones exactas
 1. Quitar `^` y `~` de `dependencies` y `devDependencies`:
@@ -126,16 +129,21 @@ node -e "const fs=require('fs');const p=JSON.parse(fs.readFileSync('package.json
 }
 ```
 (conservar `main`, `version`, `dependencies`, `devDependencies` existentes).
-3. Instalar y validar:
+3. Instalar y validar (**`expo install` escribe `~` aunque exista `save-exact`**, por eso se re-fija después):
 ```bash
 pnpm install
 pnpm exec expo install react-native-safe-area-context
 pnpm exec expo install --check
-pnpm exec expo-doctor
 ```
-`expo install --check` es la fuente de verdad de compatibilidad. Si propone cambios, aplicarlos con `pnpm exec expo install --fix` y confirmar que `package.json` sigue **sin `^` ni `~`**.
+Volver a ejecutar el script del punto 1 para quitar el `~` que dejó `expo install` (queda `react-native-safe-area-context` exacto), luego:
+```bash
+pnpm install
+pnpm typecheck
+pnpm dlx expo-doctor     # opcional; requiere red. expo-doctor NO es un bin local
+```
+`expo install --check` es la fuente de verdad de compatibilidad. Si propone cambios, aplicarlos con `pnpm exec expo install --fix` y volver a fijar versiones.
 
-Referencia del repo de contraste (no obligatoria si Expo indica otra cosa): `expo 57.0.4`, `react-native 0.86.0`, `react 19.2.3`, `typescript 6.0.3`.
+Versiones resueltas al construir esta semana (template `blank-typescript@sdk-57`): `expo 57.0.31`, `expo-status-bar 57.0.1`, `react 19.2.3`, `react-native 0.86.3`, `typescript 6.0.3`, `@types/react 19.2.2`, `react-native-safe-area-context 5.7.0`, `husky 9.1.7`, `@commitlint/cli` y `config-conventional 21.2.4`, pnpm `10.34.8`. (El repo de referencia usa `expo 57.0.4` / `react-native 0.86.0`: son parches anteriores, no hay conflicto.)
 
 Commits:
 ```bash
@@ -477,7 +485,8 @@ git tag week-01-done && git push origin week-01-done
 `week-02` sale de `week-01` (`git switch -c week-02`). Outcome: `FlatList` ≥10 mascotas, búsqueda en vivo, filtro por especie, estado vacío, theme centralizado en `src/theme/index.ts`, `KeyboardAvoidingView`. Pedir a Claude el **HANDOFF-week-02**.
 
 ## ESTADO (actualizar al avanzar)
-- Paso actual: Paso 0
-- Último commit: —
-- Bloqueos: —
-- Notas para el siguiente Claude: —
+- Pasos 0–10: HECHOS y verificados en sandbox (typecheck OK, `frozen-lockfile` OK, `expo export --platform android` empaqueta 592 módulos, hooks rechazan commits inválidos).
+- Pendiente por el usuario: Paso 11 (probar en Expo Go real), crear repo remoto y Paso 12 (push de `main`, `week-01` y tag).
+- Último commit: `feat(week-01): add home screen with pet cards`
+- Bloqueos: ninguno.
+- Notas para el siguiente Claude: siguiente es HANDOFF-week-02 (`git switch -c week-02` desde `week-01`). Los commits de `main` y `week-01` ya existen; no rehacer.
