@@ -37,7 +37,7 @@ export function PetCard({ pet, onPress }: PetCardProps): React.JSX.Element {
       onPress={() => onPress(pet)}
       style={({ pressed }) => [styles.card, pressed && styles.cardPressed]}
     >
-      <Image source={{ uri: pet.photoUrl }} style={styles.image} />
+      <Image source={pet.photo} style={styles.image} />
       <View style={styles.body}>
         <View style={styles.row}>
           <Text style={styles.name}>

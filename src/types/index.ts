@@ -1,3 +1,5 @@
+import type { ImageSourcePropType } from 'react-native';
+
 export type Species = 'dog' | 'cat' | 'rabbit' | 'bird' | 'other';
 export type Sex = 'male' | 'female';
 export type Size = 'small' | 'medium' | 'large';
@@ -12,7 +14,7 @@ export interface Pet {
   sex: Sex;
   size: Size;
   description: string;
-  photoUrl: string;
+  photo: ImageSourcePropType;
   vaccinated: boolean;
   sterilized: boolean;
   status: AdoptionStatus;
