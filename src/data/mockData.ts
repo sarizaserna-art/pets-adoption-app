@@ -1,5 +1,5 @@
 import type { Pet } from '../types';
-
+// esta parte es mi base de datos 
 export const PETS: Pet[] = [
   {
     id: 'pet-001',

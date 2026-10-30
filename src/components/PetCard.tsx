@@ -2,6 +2,8 @@ import React from 'react';
 import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
 import type { Pet } from '../types';
 
+
+//contenido de las variables 
 interface PetCardProps {
   pet: Pet;
   onPress: (pet: Pet) => void;

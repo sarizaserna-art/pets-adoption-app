@@ -1,24 +1,37 @@
+
 import React from 'react';
-import { Alert, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import type { NativeStackScreenProps } from '@react-navigation/native-stack';
+
 import { PetCard } from '../components/PetCard';
 import { PETS } from '../data/mockData';
 import type { Pet } from '../types';
+import type { HomeStackParamList } from '../types/navigation';
 
-export function HomeScreen(): React.JSX.Element {
+type Props = NativeStackScreenProps<HomeStackParamList, 'HomeList'>;
+
+export function HomeScreen({ navigation }: Props): React.JSX.Element {
   const handlePress = (pet: Pet): void => {
-    Alert.alert(pet.name, pet.description);
+    navigation.navigate('PetDetail', { petId: pet.id });
   };
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
       <View style={styles.header}>
         <Text style={styles.title}>🐾 Huellitas</Text>
-        <Text style={styles.subtitle}>Centro de adopción de mascotas</Text>
+        <Text style={styles.subtitle}>
+          Centro de adopción de mascotas
+        </Text>
       </View>
+
       <ScrollView contentContainerStyle={styles.list}>
         {PETS.map((pet) => (
-          <PetCard key={pet.id} pet={pet} onPress={handlePress} />
+          <PetCard
+            key={pet.id}
+            pet={pet}
+            onPress={handlePress}
+          />
         ))}
       </ScrollView>
     </SafeAreaView>
