@@ -1,99 +1,146 @@
-//esto  es como la pantalla q da detalles de las mascotas 
+// src/screens/DetailScreen.tsx
 import React from 'react';
-import {
-  Image,
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
-} from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import type { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { Image, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { useRoute, type RouteProp } from '@react-navigation/native';
+import { COLORS, RADIUS, SPACING, TYPOGRAPHY } from '../theme';
+import type { HomeStackParamList } from '../navigation/types';
+import { useSavedStore } from '../stores/savedStore';
+import { ITEMS } from '../data/mockData';
+import type { Item } from '../types';
 
-import { PETS } from '../data/mockData';
-import type { HomeStackParamList } from '../types/navigation.ts';
+type DetailRouteProp = RouteProp<HomeStackParamList, 'HomeDetail'>;
 
-type Props = NativeStackScreenProps<HomeStackParamList, 'PetDetail'>;
+export function DetailScreen(): React.JSX.Element {
+  const route = useRoute<DetailRouteProp>();
+  const { id } = route.params;
 
-export function DetailScreen({ route }: Props): React.JSX.Element {
-  const { petId } = route.params;
-  const pet = PETS.find((item) => item.id === petId);
+  const item: Item | undefined = ITEMS.find((i) => i.id === id);
 
-  if (!pet) {
+  const isItemSaved = useSavedStore((state) => state.isItemSaved);
+  const addItem = useSavedStore((state) => state.addItem);
+  const removeItem = useSavedStore((state) => state.removeItem);
+
+  const isSaved = isItemSaved(id);
+
+  const handleToggleSave = (): void => {
+    if (isSaved) {
+      removeItem(id);
+    } else if (item) {
+      addItem(item);
+    }
+  };
+
+  if (!item) {
     return (
-      <SafeAreaView style={styles.container}>
-        <Text>Mascota no encontrada.</Text>
-      </SafeAreaView>
+      <View style={styles.container}>
+        <Text style={styles.title}>Mascota no encontrada</Text>
+      </View>
     );
   }
 
   return (
-    <SafeAreaView style={styles.container}>
-      <ScrollView>
-        <Image source={pet.photo} style={styles.image} />
+    <ScrollView contentContainerStyle={styles.container}>
+      <Image source={{ uri: item.image }} style={styles.heroImage} />
 
-        <View style={styles.content}>
-          <Text style={styles.name}>{pet.name}</Text>
-          <Text style={styles.breed}>{pet.breed}</Text>
+      <View style={styles.info}>
+        <Text style={styles.title}>{item.name}</Text>
+        <Text style={styles.id}>ID: {item.id}</Text>
+        <Text style={styles.description}>{item.description}</Text>
 
-          <Text style={styles.sectionTitle}>Sobre mí</Text>
-          <Text style={styles.description}>{pet.description}</Text>
-
-          <Text style={styles.sectionTitle}>Información</Text>
-
-          <Text style={styles.info}>Edad: {pet.ageMonths} meses</Text>
-          <Text style={styles.info}>Sexo: {pet.sex === 'female' ? 'Hembra' : 'Macho'}</Text>
-          <Text style={styles.info}>Tamaño: {pet.size}</Text>
-          <Text style={styles.info}>
-            Vacunado: {pet.vaccinated ? 'Sí' : 'No'}
-          </Text>
-          <Text style={styles.info}>
-            Esterilizado: {pet.sterilized ? 'Sí' : 'No'}
-          </Text>
+        <View style={styles.badgeContainer}>
+          <Text style={styles.badge}>Raza: {item.breed}</Text>
+          <Text style={styles.badge}>Edad: {item.age}</Text>
+          <Text style={styles.badge}>Género: {item.gender}</Text>
         </View>
-      </ScrollView>
-    </SafeAreaView>
+      </View>
+
+      <Pressable
+        style={({ pressed }) => [
+          styles.saveButton,
+          isSaved && styles.saveButtonActive,
+          pressed && styles.saveButtonPressed,
+        ]}
+        onPress={handleToggleSave}
+        testID="save-button"
+      >
+        <Text style={[styles.saveButtonText, isSaved && styles.saveButtonTextActive]}>
+          {isSaved ? '❤️ Quitar de Favoritos' : '🤍 Agregar a Favoritos'}
+        </Text>
+      </Pressable>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
-    backgroundColor: '#F3F4F6',
+    flexGrow: 1,
+    backgroundColor: COLORS.background,
+    padding: SPACING.lg,
+    gap: SPACING.lg,
   },
-  image: {
-    width: '100%',
-    height: 280,
+  heroImage: {
+    width: '100vw',
+    height: 220,
+    borderRadius: RADIUS.lg,
+    backgroundColor: COLORS.card,
     resizeMode: 'cover',
   },
-  content: {
-    padding: 20,
+  info: {
+    gap: SPACING.sm,
   },
-  name: {
-    fontSize: 30,
-    fontWeight: '800',
-    color: '#111827',
+  title: {
+    ...TYPOGRAPHY.h2,
   },
-  breed: {
-    fontSize: 16,
-    color: '#6B7280',
-    marginTop: 4,
-  },
-  sectionTitle: {
-    fontSize: 20,
-    fontWeight: '700',
-    color: '#111827',
-    marginTop: 24,
-    marginBottom: 10,
+  id: {
+    ...TYPOGRAPHY.label,
+    textTransform: 'uppercase',
+    letterSpacing: 1,
   },
   description: {
-    fontSize: 16,
-    color: '#4B5563',
+    ...TYPOGRAPHY.body,
+    color: COLORS.textSecondary,
     lineHeight: 24,
   },
-  info: {
-    fontSize: 16,
-    color: '#374151',
-    marginBottom: 10,
+  badgeContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: SPACING.sm,
+    marginTop: SPACING.sm,
+  },
+  badge: {
+    backgroundColor: COLORS.card,
+    color: COLORS.accent,
+    paddingHorizontal: SPACING.md,
+    paddingVertical: SPACING.xs,
+    borderRadius: RADIUS.sm,
+    overflow: 'hidden',
+    fontSize: 14,
+    fontWeight: '600',
+    borderWidth: 1,
+    borderColor: COLORS.border,
+  },
+  saveButton: {
+    backgroundColor: COLORS.card,
+    borderRadius: RADIUS.md,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    paddingVertical: SPACING.md,
+    alignItems: 'center',
+    marginTop: SPACING.md,
+  },
+  saveButtonActive: {
+    backgroundColor: COLORS.error,
+    borderColor: COLORS.error,
+  },
+  saveButtonPressed: {
+    opacity: 0.7,
+  },
+  saveButtonText: {
+    ...TYPOGRAPHY.body,
+    fontWeight: '600',
+    color: COLORS.textPrimary,
+  },
+  saveButtonTextActive: {
+    color: COLORS.background,
   },
 });

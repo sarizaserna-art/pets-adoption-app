@@ -1,63 +1,130 @@
-
+// src/screens/HomeScreen.tsx
 import React from 'react';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import type { NativeStackScreenProps } from '@react-navigation/native-stack';
+import {
+  FlatList,
+  Image,
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
+  type ListRenderItem,
+} from 'react-native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { useNavigation } from '@react-navigation/native';
+import { ITEMS } from '../data/mockData';
+import { COLORS, RADIUS, SPACING, TYPOGRAPHY } from '../theme';
+import type { Item } from '../types';
+import type { HomeStackParamList } from '../navigation/types';
 
-import { PetCard } from '../components/PetCard';
-import { PETS } from '../data/mockData';
-import type { Pet } from '../types';
-import type { HomeStackParamList } from '../types/navigation';
+type HomeScreenNavProp = NativeStackNavigationProp<HomeStackParamList, 'HomeList'>;
 
-type Props = NativeStackScreenProps<HomeStackParamList, 'HomeList'>;
+interface ItemCardProps {
+  item: Item;
+  onPress: () => void;
+}
 
-export function HomeScreen({ navigation }: Props): React.JSX.Element {
-  const handlePress = (pet: Pet): void => {
-    navigation.navigate('PetDetail', { petId: pet.id });
-  };
-
+function ItemCard({ item, onPress }: ItemCardProps): React.JSX.Element {
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
-      <View style={styles.header}>
-        <Text style={styles.title}>🐾 Huellitas</Text>
-        <Text style={styles.subtitle}>
-          Centro de adopción de mascotas
+    <Pressable
+      style={({ pressed }) => [styles.card, pressed && styles.cardPressed]}
+      onPress={onPress}
+      testID={`item-card-${item.id}`}
+    >
+      <Image source={{ uri: item.image }} style={styles.thumbnail} />
+      <View style={styles.cardContent}>
+        <Text style={styles.cardTitle} numberOfLines={1}>
+          {item.name}
+        </Text>
+        <Text style={styles.cardDescription} numberOfLines={2}>
+          {item.description}
         </Text>
       </View>
+      <Text style={styles.chevron}>›</Text>
+    </Pressable>
+  );
+}
 
-      <ScrollView contentContainerStyle={styles.list}>
-        {PETS.map((pet) => (
-          <PetCard
-            key={pet.id}
-            pet={pet}
-            onPress={handlePress}
-          />
-        ))}
-      </ScrollView>
-    </SafeAreaView>
+export function HomeScreen(): React.JSX.Element {
+  const navigation = useNavigation<HomeScreenNavProp>();
+  const items = ITEMS;
+
+  const renderItem: ListRenderItem<Item> = ({ item }) => (
+    <ItemCard
+      item={item}
+      onPress={() =>
+        navigation.navigate('HomeDetail', { id: item.id, name: item.name })
+      }
+    />
+  );
+
+  return (
+    <View style={styles.container}>
+      <FlatList
+        data={items}
+        keyExtractor={(item) => item.id}
+        renderItem={renderItem}
+        contentContainerStyle={styles.list}
+        ItemSeparatorComponent={() => <View style={styles.separator} />}
+        ListHeaderComponent={
+          <Text style={styles.sectionLabel}>
+            {items.length} Mascotas disponibles en el refugio
+          </Text>
+        }
+      />
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F3F4F6',
-  },
-  header: {
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    backgroundColor: '#FFFFFF',
-  },
-  title: {
-    fontSize: 28,
-    fontWeight: '800',
-    color: '#111827',
-  },
-  subtitle: {
-    fontSize: 14,
-    color: '#6B7280',
+    backgroundColor: COLORS.background,
   },
   list: {
-    padding: 16,
+    padding: SPACING.md,
+    paddingBottom: SPACING.xl,
+  },
+  sectionLabel: {
+    ...TYPOGRAPHY.label,
+    textTransform: 'uppercase',
+    letterSpacing: 1,
+    marginBottom: SPACING.sm,
+  },
+  separator: {
+    height: SPACING.sm,
+  },
+  card: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: COLORS.card,
+    borderRadius: RADIUS.md,
+    padding: SPACING.md,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    gap: SPACING.md,
+  },
+  cardPressed: {
+    opacity: 0.7,
+  },
+  thumbnail: {
+    width: 56,
+    height: 56,
+    borderRadius: RADIUS.sm,
+    backgroundColor: COLORS.surface,
+  },
+  cardContent: {
+    flex: 1,
+    gap: SPACING.xs,
+  },
+  cardTitle: {
+    ...TYPOGRAPHY.body,
+    fontWeight: '600',
+  },
+  cardDescription: {
+    ...TYPOGRAPHY.caption,
+  },
+  chevron: {
+    ...TYPOGRAPHY.h2,
+    color: COLORS.textMuted,
   },
 });
